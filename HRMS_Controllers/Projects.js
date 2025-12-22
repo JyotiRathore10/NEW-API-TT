@@ -1,43 +1,94 @@
 const { sql, poolPromise } = require('../config/db');
 
-exports.getProjectsByIds = async (req, res) => {
-  try {
-    const { projectIds } = req.body;
-    
-    if (!projectIds || !Array.isArray(projectIds)) {
-      return res.status(400).json({ message: 'Invalid project IDs' });
-    }
 
-    const pool = await poolPromise;
-    
-    // TODO: Implement project retrieval from database
-    res.status(200).json({ projects: [] });
-  } catch (error) {
-    console.error('Error getting projects:', error);
-    res.status(500).json({ message: 'Error getting projects', error: error.message });
-  }
+// GET Projects By IDs
+exports.getProjectsByIds = async (req, res) => {
+    try {
+        const { projectIds } = req.body;
+
+        if (!projectIds || !Array.isArray(projectIds) || projectIds.length === 0) {
+            return res.status(400).json({ error: 'projectIds must be a non-empty array.' });
+        }
+
+        const pool = await poolPromise;
+        const idsList = projectIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+
+        const request = pool.request();
+        idsList.forEach((id, index) => {
+            request.input(`id${index}`, sql.Int, id);
+        });
+
+        const whereClause = idsList.map((_, index) => `@id${index}`).join(',');
+
+        const query = `SELECT * FROM HRMS_Projects WHERE ProjectsId IN (${whereClause})`;
+
+        const result = await request.query(query);
+
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
+
+// GET /api/employees/options
 exports.getEmployeeOptions = async (req, res) => {
   try {
     const pool = await poolPromise;
-    
     const result = await pool.request()
-      .query('SELECT EmployeeID as id, username as label FROM HRMS_users');
-
-    res.status(200).json({ employees: result.recordset });
-  } catch (error) {
-    console.error('Error getting employee options:', error);
-    res.status(500).json({ message: 'Error getting employee options', error: error.message });
+      .query(`
+        SELECT EmployeeID AS value, username AS label, email
+        FROM HRMS_users
+        ORDER BY username
+      `);
+    // Ensure we always return an array
+    const recordset = Array.isArray(result.recordset) ? result.recordset : [];
+    res.json({ employees: recordset });
+  } catch (err) {
+    console.error('Error fetching employee options:', err);
+    res.status(500).json({ employees: [], error: 'Failed to fetch employee options' });
   }
 };
 
+// GET /api/projects/options
 exports.getProjectOptions = async (req, res) => {
   try {
-    // TODO: Implement project options retrieval
-    res.status(200).json({ projects: [] });
-  } catch (error) {
-    console.error('Error getting project options:', error);
-    res.status(500).json({ message: 'Error getting project options', error: error.message });
+    const pool = await poolPromise;
+    const result = await pool.request()
+     .query(`
+        SELECT ProjectsId AS value, ProjectsName AS label
+        FROM HRMS_Projects
+        ORDER BY ProjectsName
+      `);
+    // Ensure we always return an array
+    const recordset = Array.isArray(result.recordset) ? result.recordset : [];
+    res.json({ projectOptions: recordset });
+  } catch (err) {
+    console.error('Error fetching project options:', err);
+    res.status(500).json({ projectOptions: [], error: 'Failed to fetch project options' });
+  }
+};
+
+// GET /api/category/options (from DB)
+exports.getCategoryOptions = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().query('SELECT CategoryName FROM HRMS_Categories ORDER BY CategoryName');
+    res.json(result.recordset.map(row => row.CategoryName));
+  } catch (err) {
+    console.error('Error fetching category options:', err);
+    res.status(500).json({ error: 'Failed to fetch category options' });
+  }
+};
+
+// GET /api/status/options (from DB)
+exports.getStatusOptions = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().query('SELECT StatusName FROM HRMS_Statuses ORDER BY StatusName');
+    res.json(result.recordset.map(row => row.StatusName));
+  } catch (err) {
+    console.error('Error fetching status options:', err);
+    res.status(500).json({ error: 'Failed to fetch status options' });
   }
 };

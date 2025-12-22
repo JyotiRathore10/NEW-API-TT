@@ -60,7 +60,7 @@ exports.getTimesheetEntriesByEmployee = async (req, res) => {
 
         // Validate pagination parameters
         const pageNum = Math.max(1, parseInt(page) || 1);
-        const limitNum = Math.min(20, Math.max(1, parseInt(limit) || 10)); // Max 20 per page
+        const limitNum = Math.min(20, Math.max(1, parseInt(limit) || 10));
         const offset = (pageNum - 1) * limitNum;
 
     
