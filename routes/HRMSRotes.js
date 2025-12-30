@@ -12,13 +12,22 @@ const {
 } = require('../HRMS_Controllers/timesheetController');
 
 const { approveTimesheetEntry, bulkApproveTimesheetEntries } = require('../HRMS_Controllers/Approve');
-const { getProjectsByIds, getEmployeeOptions, getProjectOptions } = require('../HRMS_Controllers/Projects');
+const { getProjectsByIds, getEmployeeOptions, getProjectOptions, getCategoryOptions } = require('../HRMS_Controllers/Projects');
 const { bulkUpdateTimesheetStatus, submitTimesheet } = require('../HRMS_Controllers/Submite');
 
 const loginController = require('../HRMS_Controllers/login');
 const { changePassword, forgetPassword } = require('../HRMS_Controllers/UserManagment');
 const { getUserData, getAllHRMSDataWithAutoFill, sendWelcomeMails, sendBulkMails, sendmailwithattachments } = require('../HRMS_Controllers/Mail');
 const { sendTemplateMail } = require('../HRMS_Controllers/mailController');
+const { 
+  getHours, 
+  addHours, 
+  updateHours, 
+  deleteHours, 
+  getUserWithHours, 
+  assignHoursToUser, 
+  getAllUsersWithHours 
+} = require('../HRMS_Controllers/hoursController');
 
 
 
@@ -59,7 +68,20 @@ router.post('/sendTemplateMail', sendTemplateMail); // New route for sending tem
 router.post('/sendBulkMails', sendBulkMails);
 router.post('/sendmailwithattachments',upload.array('pdfs'),sendmailwithattachments);
 router.post('/sendWelcomeMails', sendWelcomeMails);
+
+// ============================================================================
+// Hours Management Routes
+// ============================================================================
+router.get('/hours', getHours);                          // Get all hours master data
+router.post('/hours/add', addHours);                     // Add new hours
+router.post('/hours/update', updateHours);               // Update hours
+router.post('/hours/delete', deleteHours);               // Delete hours
+router.post('/hours/user', getUserWithHours);            // Get specific user with hours
+router.post('/hours/assign', assignHoursToUser);         // Assign hours to user
+router.get('/hours/users/all', getAllUsersWithHours);    // Get all users with hours
+
 router.get('/employeeOptions', getEmployeeOptions);
 router.get('/projectOptions', getProjectOptions);
+router.get('/categoryOptions', getCategoryOptions);
 
 module.exports = router;

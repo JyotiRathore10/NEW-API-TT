@@ -1,4 +1,5 @@
 const { sql, poolPromise } = require('../config/db');
+const { validatePaginationParams, buildPaginationMetadata, formatPaginatedResponse } = require('../utils/paginationHelper');
 
 
 // GET Projects By IDs
@@ -41,12 +42,10 @@ exports.getEmployeeOptions = async (req, res) => {
         FROM HRMS_users
         ORDER BY username
       `);
-    // Ensure we always return an array
-    const recordset = Array.isArray(result.recordset) ? result.recordset : [];
-    res.json({ employees: recordset });
+    res.json(result.recordset);
   } catch (err) {
     console.error('Error fetching employee options:', err);
-    res.status(500).json({ employees: [], error: 'Failed to fetch employee options' });
+    res.status(500).json({ error: 'Failed to fetch employee options' });
   }
 };
 
@@ -60,12 +59,10 @@ exports.getProjectOptions = async (req, res) => {
         FROM HRMS_Projects
         ORDER BY ProjectsName
       `);
-    // Ensure we always return an array
-    const recordset = Array.isArray(result.recordset) ? result.recordset : [];
-    res.json({ projectOptions: recordset });
+    res.json(result.recordset);
   } catch (err) {
     console.error('Error fetching project options:', err);
-    res.status(500).json({ projectOptions: [], error: 'Failed to fetch project options' });
+    res.status(500).json({ error: 'Failed to fetch project options' });
   }
 };
 
@@ -73,8 +70,8 @@ exports.getProjectOptions = async (req, res) => {
 exports.getCategoryOptions = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query('SELECT CategoryName FROM HRMS_Categories ORDER BY CategoryName');
-    res.json(result.recordset.map(row => row.CategoryName));
+    const result = await pool.request().query('SELECT CategoryId as value,CategoryName as label FROM HRMS_Categories ORDER BY CategoryName');
+    res.json(result.recordset);
   } catch (err) {
     console.error('Error fetching category options:', err);
     res.status(500).json({ error: 'Failed to fetch category options' });

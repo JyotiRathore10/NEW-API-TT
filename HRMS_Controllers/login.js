@@ -13,9 +13,11 @@ exports.login = async (req, res) => {
       .input('password', sql.VarChar, password)
       .query(`
         SELECT 
-          u.EmployeeID, u.username, u.email, u.createdDate, u.CreatedBy, u.ModifiedDate, u.ModifiedBy, u.IsManager,
+          u.EmployeeID, u.username, u.email, u.createdDate, u.CreatedBy, u.ModifiedDate, u.ModifiedBy, u.IsManager, u.HoursId,
+          h.Hours,
           r.roleid, r.roleName, r.createdDate AS roleCreatedDate, r.CreatedBy AS roleCreatedBy, r.ModifiedDate AS roleModifiedDate, r.ModifiedBy AS roleModifiedBy
         FROM HRMS_users u
+        LEFT JOIN HRMS_Hours h ON u.HoursId = h.HoursId
         LEFT JOIN HRMS_userrole ur ON u.EmployeeID = ur.EmployeeID
         LEFT JOIN HRMS_roles r ON ur.roleid = r.roleid
         WHERE u.username = @username AND u.password = @password
@@ -34,7 +36,9 @@ exports.login = async (req, res) => {
       CreatedBy: result.recordset[0].CreatedBy,
       ModifiedDate: result.recordset[0].ModifiedDate,
       ModifiedBy: result.recordset[0].ModifiedBy,
-      IsManager: result.recordset[0].IsManager, // Add IsManager to user object
+      IsManager: result.recordset[0].IsManager,
+      HoursId: result.recordset[0].HoursId,
+      MaxHoursAllowed: result.recordset[0].Hours || null, // Add max hours allowed
       roles: result.recordset
         .filter(r => r.roleid)
         .map(r => ({

@@ -14,7 +14,7 @@ exports.bulkUpdateTimesheetStatus = async (req, res) => {
       await pool.request()
         .input('entryId', sql.Int, entryId)
         .input('status', sql.VarChar, status)
-        .query('UPDATE timesheet_entries SET status = @status WHERE id = @entryId');
+        .query('UPDATE HRMS_TimesheetEntries SET Status = @status WHERE EntryID = @entryId');
     }
 
     res.status(200).json({ message: 'Timesheet status updated successfully' });
