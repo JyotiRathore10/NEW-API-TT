@@ -3,7 +3,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
-const HRMSRotes = require('./routes/HRMSRotes');
+const HRMSRotes = require('./routes/HRMSRoutes');
+const scrapperRoutes = require('./routes/ScrapperRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -149,6 +150,7 @@ app.use((req, res, next) => {
 // API Routes
 app.use('/auth', authRoutes);
 app.use('/api', HRMSRotes);
+app.use('/scrapper', scrapperRoutes);
 
 
 
